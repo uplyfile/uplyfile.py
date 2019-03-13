@@ -119,7 +119,11 @@ list_resize_with_two_values = [
 list_of_urls = [
     "https://uplycdn.com/Cjii6o/YVJ5M0LSOhXn/20180614_160625.jpg",
     "https://uplycdn.com/docs/bvAbyJOsjafM/girls-smiling.jpg",
+    "https://uplycdn.com/docs/bvAbyJOsjafM/face_mark,download,sharpen/girls-smiling.jpg"
+    "https://uplycdn.com/docs/bvAbyJOsjafM/sharpen,blur,quality:100,autorotate,autoformat,blur,blur/girls-smiling.jpg"
     "https://uplycdn.com/Cjii6o/kb2CqsjPai2u/2019-01-29-23.2201.jpg",
+    "https://uplycdn.com/Cjii6o/kb2CqsjPai2u/avatar,sharpen,bw/",
+    "https://uplycdn.com/docs/bvAbyJOsjafM/avatar,sharpen,bw/",
     "https://uplycdn.com/Cjii6o/kb2CqsjPai2u/",
     "https://uplycdn.com/docs/bvAbyJOsjafM/",
     "https://uplycdn.com/Cjii6o/YVJ5M0LSOhXn/",
@@ -138,7 +142,9 @@ def picture_object(image_url):
 
 @pytest.fixture
 def base_link(image_url):
-    return image_url.rpartition("/")[0] + "/"
+    parse = urlparse(image_url)
+    start, stop = re.match(r"/\w+/\w+/", parse.path).span()
+    return f"{parse.scheme}://{parse.netloc}" + parse.path[start:stop]
 
 
 @pytest.fixture
@@ -159,7 +165,7 @@ def url_path(image_url):
 
 @pytest.fixture
 def re_pattern():
-    return r"^/[\w]+/[\w]+/"
+    return r"^/\w+/\w+/"
 
 
 def test_raise_if_invalid_url(re_pattern, url_path):
