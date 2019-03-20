@@ -1,0 +1,32 @@
+image: python:latest
+
+
+stages:
+  - build
+  - black
+  - test
+
+cache:
+  paths:
+    - venv/
+
+build:
+    stage: build
+    script:
+        - echo "VENV, BLACK and PYTEST install"
+        - pip install pipenv
+        - pipenv install
+
+black:
+    stage: black
+    script:
+        - echo "BLACK - syntax checking"
+        - source venv/bin/activate
+        - black --check uplyfile_django/*.py
+
+test:
+    stage: test
+    script:
+        - echo "PYTEST - testing software"
+        - source venv/bin/activate
+        - pytest
