@@ -1,5 +1,9 @@
 image: python:latest
 
+variables:
+  PIP_CACHE_DIR: $CI_PROJECT_DIR/.cache/pip
+  PIPENV_CACHE_DIR: $CI_PROJECT_DIR/.cache/pipenv
+
 
 stages:
   - build
@@ -8,25 +12,28 @@ stages:
 
 cache:
   paths:
-    - venv/
+    - .cache/
+    - .venv/
 
 build:
     stage: build
     script:
-        - echo "VENV, BLACK and PYTEST install"
+        - echo "PIPENV BUILD ENV"
         - pip install pipenv
-        - pipenv install
+        - export PIPENV_VENV_IN_PROJECT=True
+        - pipenv install --skip-lock
+
 
 black:
     stage: black
     script:
         - echo "BLACK - syntax checking"
-        - source venv/bin/activate
+        - source .venv/bin/activate
         - black --check uplyfile_django/*.py
 
 test:
     stage: test
     script:
         - echo "PYTEST - testing software"
-        - source venv/bin/activate
+        - source .venv/bin/activate
         - pytest

@@ -236,6 +236,6 @@ class UplyImage:
     @property
     def url(self):
         if self.operation == []:
-            return f"{self.base_url}/{','.join(self.operation)}{self.file_name_without_extension}{self.extension}"
+            return f"{self.base_url}{','.join(self.operation)}{self.file_name_without_extension}{self.extension}"
         else:
-            return f"{self.base_url}/{','.join(self.operation)},{self.file_name_without_extension}{self.extension}"
+            return f"{self.base_url}{','.join(self.operation)}/{self.file_name_without_extension}{self.extension}"
