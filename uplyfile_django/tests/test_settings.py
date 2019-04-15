@@ -12,7 +12,7 @@ UPLYFILE_STORAGE = {
     "SECRET_KEY": os.environ.get("TEST_PRIVATE_KEY", "b"),
 }
 
-STATICFILES_STORAGE = "uplyfile_django.storage.uplyfile_storage.UplyfileStorage"
+STATICFILES_STORAGE = "uplyfile_django.storage.UplyfileStorage"
 
 DATABASES = {
     "default": {
