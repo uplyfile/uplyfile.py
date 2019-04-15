@@ -7,7 +7,8 @@ verify_ssl = true
 django = "*"
 requests = "*"
 pytest = "*"
-Pillow = "*"
+pytest-cov = "*"
+unidecode = "*"
 
 [requires]
 python_version = "3.7"
@@ -15,3 +16,7 @@ python_version = "3.7"
 [dev-packages]
 pep8 = "*"
 black = "*"
+isort = "*"
+
+[pipenv]
+allow_prereleases = true

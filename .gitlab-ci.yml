@@ -32,7 +32,8 @@ black:
         - black --check uplyfile_django/*.py
 
 test:
-    stage: test
+    variables: 
+      DJANGO_SETTINGS_MODULE: "uplyfile_django.tests.test_settings"
     script:
         - echo "PYTEST - testing software"
         - source .venv/bin/activate
