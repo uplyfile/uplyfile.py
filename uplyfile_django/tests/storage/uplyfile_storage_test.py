@@ -8,7 +8,7 @@ from django.core.files.base import ContentFile
 from django.test import override_settings
 from requests import HTTPError
 
-from uplyfile_django.storage.uplyfile_storage import UplyfileStorage
+from uplyfile_django.storage import UplyfileStorage
 
 
 @pytest.fixture
@@ -56,7 +56,7 @@ class TestStorage:
     def test_exists_return_false_when_file_not_mapped(self, storage):
         assert not storage.exists("any_file")
 
-    @patch("uplyfile_django.storage.uplyfile_storage.Uplyfile")
+    @patch("uplyfile_django.storage.Uplyfile")
     def test_exists_returns_false_when_file_mapped_but_not_uploaded(
         self, uply_mock, storage
     ):
@@ -67,7 +67,7 @@ class TestStorage:
         assert not storage.exists("uploaded")
         uply_mock.file_exists.assert_called_once()
 
-    @patch("uplyfile_django.storage.uplyfile_storage.Uplyfile")
+    @patch("uplyfile_django.storage.Uplyfile")
     def test_exists_returns_true_when_file_mapped_and_hosted(self, uply_mock, storage):
         uply_mock.file_exists.return_value = True
         storage.uplyfile = uply_mock
@@ -79,7 +79,7 @@ class TestStorage:
         assert storage.exists("polydactyl_cat")
         uply_mock.file_exists.assert_called_once()
 
-    @patch("uplyfile_django.storage.uplyfile_storage.Uplyfile")
+    @patch("uplyfile_django.storage.Uplyfile")
     def test_exists_returns_false_when_file_not_mapped(self, uply_mock, storage):
         uply_mock.file_exists.return_value = True
         storage.uplyfile = uply_mock
@@ -91,7 +91,7 @@ class TestStorage:
         storage.mapper.save("some_url", "name")
         assert storage.url("some_url") == "name"
 
-    @patch("uplyfile_django.storage.uplyfile_storage.Uplyfile")
+    @patch("uplyfile_django.storage.Uplyfile")
     def test_url_doesnt_query_uply_api(self, mock, storage):
         storage.mapper.save("some_url", "name")
         mock.get_file_url.assert_not_called()
@@ -105,7 +105,7 @@ class TestStorage:
 
 
 class TestStoreRetrieveFiles:
-    @patch("uplyfile_django.storage.uplyfile_storage.Uplyfile")
+    @patch("uplyfile_django.storage.Uplyfile")
     def test_saving_new_file_returns_name(self, uply_mock, storage):
         NAME = "example"
         uply_mock.get_file_url.return_value = None
@@ -116,7 +116,7 @@ class TestStoreRetrieveFiles:
         assert from_save == NAME
         assert storage.exists(NAME)
 
-    @patch("uplyfile_django.storage.uplyfile_storage.Uplyfile")
+    @patch("uplyfile_django.storage.Uplyfile")
     def test_saving_by_path_saves_file_with_name_inferred_from_path(
         self, uply_mock, tmp_path, storage
     ):
