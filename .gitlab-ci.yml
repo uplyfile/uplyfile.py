@@ -7,34 +7,38 @@ variables:
 
 stages:
   - build
-  - black
   - test
 
 cache:
+  key: uplyfile
   paths:
-    - .cache/
+    - .cache/pip
+    - .cache/pipenv
     - .venv/
 
 build:
     stage: build
+    variables:
+        PIPENV_VENV_IN_PROJECT: "true"
+
     script:
         - echo "PIPENV BUILD ENV"
         - pip install pipenv
-        - export PIPENV_VENV_IN_PROJECT=True
-        - pipenv install --skip-lock
-
+        - pipenv sync --clear
 
 black:
-    stage: black
-    script:
-        - echo "BLACK - syntax checking"
-        - source .venv/bin/activate
-        - black --check uplyfile_django/*.py
+   stage: test
+   script:
+     - echo "BLACK"
+     - source .venv/bin/activate
+     - black --check uplyfile_django/*.py
 
-test:
-    variables: 
-      DJANGO_SETTINGS_MODULE: "uplyfile_django.tests.test_settings"
+
+pytest:
+    stage: test
+    variables:
+        DJANGO_SETTINGS_MODULE: "uplyfile_django.tests.test_settings"
     script:
-        - echo "PYTEST - testing software"
+        - echo "PYTEST"
         - source .venv/bin/activate
-        - pytest
+        - python ./runner.py
