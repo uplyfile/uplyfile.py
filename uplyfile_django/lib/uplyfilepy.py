@@ -1,28 +1,50 @@
 import os
 import re
+import requests
 from urllib.parse import urlparse
 
 
 class UplyImage:
+    """
+    The UplyImage class gives the ability to create Uplyfile URLs.
+
+    All operations are possible to use as the chainable with the exception
+    of AI Operations that are described below.
+    """
+
+    EXPLICIT_VALUES = ("VERY_LIKELY", "LIKELY", "POSSIBLE")
+
     def __init__(self, path):
         self.path = path
         self.base_url, self.file_name = path.rsplit("/", 1)
-        self.raise_if_invalid_url(path)
-        self.remove_operations_from_url(path)
+        self._raise_if_invalid_url(path)
+        self._remove_operations_from_url(path)
         self.file_name_without_extension, self.extension = os.path.splitext(
             self.file_name
         )
         self.operation = []
 
-    def raise_if_invalid_url(self, path):
+    @property
+    def _session(self):
+        if not hasattr(self, "_session_obj"):
+            self._session_obj = requests.Session()
+        return self._session_obj
+
+    def _raise_if_invalid_url(self, path):
         parse = urlparse(path)
-        if not re.match(r"/\w+/\w+/", parse.path):
+        _proper_filepath_regexp = re.compile(r"^/\w+/\w+/")
+        if not _proper_filepath_regexp.search(parse.path):
             raise ValueError("Please enter correct path.")
 
-    def remove_operations_from_url(self, path):
+    def _remove_operations_from_url(self, path):
         parse = urlparse(path)
-        start, stop = re.match(r"/\w+/\w+/", parse.path).span()
+        _proper_filepath_regexp = re.compile(r"^/\w+/\w+/")
+        start, stop = _proper_filepath_regexp.search(parse.path).span()
         self.base_url = f"{parse.scheme}://{parse.netloc}" + parse.path[start:stop]
+
+    def _json_load_from_url(self, base_url):
+        open_url = self._session.get(f"{base_url}?metadata=extra")
+        return open_url.json()
 
     # FACES
     def avatar(self, size=None):
@@ -232,6 +254,95 @@ class UplyImage:
         if new_extension:
             self.extension = f".{new_extension}"
         return self
+
+    # AI OPERATIONS
+    def image_labels_list(self):
+        """
+        Returns a list of possible labels for image determined by AI.
+
+        The function returns a list containing
+        the labels (strings) which were recognized by AI.
+        """
+        json_data = self._json_load_from_url(self.base_url)
+        return json_data["extra"]["labels"]
+
+    def image_objects_list(self):
+        """
+        Returns a list of objects recognized by AI in the image.
+
+        The function returns a list that contains
+        the objects on the image (described as strings) if they were
+        recognized by AI. Otherwise the function
+        returns 'None'.
+        """
+        json_data = self._json_load_from_url(self.base_url)
+        object_list = [label["name"] for label in json_data["extra"]["objects"]]
+
+        return object_list if object_list else None
+
+    def objects_details(self):
+        """
+        Returns a list of objects with details: {name, bounding box, url}.
+
+        The function returns a list that contains the objects if they were
+        recognized by AI. Otherwise function returns 'None'.
+        Every each object is defined as a dictionary with details in the following order:
+
+            { 'name': 'object name',
+              'bounding_box': [list of vertices coordinates]
+              'url': 'url of cropped object'
+            }
+        """
+
+        json_data = self._json_load_from_url(self.base_url)
+        detected = json_data["extra"]["objects"]
+        for detected_obj in detected:
+            detected_obj.update({"bounding_box": detected_obj["bounding_box"]})
+
+        return detected if detected else None
+
+    def explicit_content(self):
+        """
+        Returns a boolean type if recognized adult content.
+
+        If the image contains adult content then the function
+        returns 'True'. Otherwise returns 'False'.
+        """
+        json_data = self._json_load_from_url(self.base_url)["extra"]["explicit_content"]
+
+        return any(x in self.EXPLICIT_VALUES for x in json_data.values())
+
+    def is_adult_contents(self):
+        """
+        Returns a dictionary of adult content categories.
+
+        If artificial intelligence recognized a content for adults
+        in the image then function returns a dictionary with pairs
+        of the recognized adult category and the possibility of content
+        occurrence. For example:
+            adult: "LIKELY",
+            medical: "VERY_UNLIKELY"
+        Otherwise function returns 'None'.
+        """
+        json_data = self._json_load_from_url(self.base_url)
+        adult_result_dict = {}
+        explict_content_values = json_data["extra"]["explicit_content"]
+        for key, result in explict_content_values.items():
+            if result in self.EXPLICIT_VALUES:
+                adult_result_dict[key] = result
+
+        return adult_result_dict if adult_result_dict else None
+
+    @property
+    def alt_content(self):
+        """
+        Function returns 'alt' string for image metadata.
+
+        The string for alt is made by concatenation of the image
+        labels.
+        """
+
+        return " ".join(self.image_labels_list())
 
     @property
     def url(self):
