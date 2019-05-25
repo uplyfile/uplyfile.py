@@ -1,13 +1,20 @@
 repos:
 -   repo: https://github.com/ambv/black
-    rev: stable
+    rev: 19.3b0
     hooks:
     -    id: black
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v1.2.3
+    rev: v2.2.1
     hooks:
     -    id: flake8
-         args: [--max-line-length=88]
+         args: [--ignore=E501]
     -    id: check-ast
+-   repo: https://github.com/asottile/seed-isort-config
+    rev: v1.8.0
+    hooks:
+    -   id: seed-isort-config
+-   repo: https://github.com/pre-commit/mirrors-isort
+    rev: v4.3.17
+    hooks:
     -    id: isort
          args: [-y]

@@ -137,12 +137,14 @@ class Uplyfile:
             f"{self.secret_key}{exp_date}".encode("utf-8")
         ).hexdigest()
 
-    def _md5sum(self, content, blocksize=65536):
+    def _md5sum(self, fp, blocksize=65536):
+        if "b" not in fp.mode:
+            raise ValueError("Open file in binary mode in order to use this operation")
         _hash = hashlib.md5()
-        content.seek(0)
-        for block in iter(lambda: content.read(blocksize), b""):
+        fp.seek(0)
+        for block in iter(lambda: fp.read(blocksize), b""):
             _hash.update(block)
-        content.seek(0)
+        fp.seek(0)
         return _hash.hexdigest()
 
     def _handle_api_errors(self, info, status_code):
