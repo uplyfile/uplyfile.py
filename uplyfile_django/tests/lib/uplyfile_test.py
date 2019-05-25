@@ -2,11 +2,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
-from uplyfile_django.lib.uplyfile import Uplyfile, AuthException
 from requests import HTTPError
 
-from io import BytesIO
+from uplyfile_django.lib.uplyfile import AuthException, Uplyfile
 
 
 def resources_path():
@@ -150,14 +148,15 @@ class TestGetFileUrl:
     def test_with_cache_list_project_files_is_called_at_most_once(
         self, project_files_mock, uplyfile
     ):
-        project_files_mock.return_value = project_files(self)
-        project_files_mock.assert_not_called()
+        with open("uplyfile_django/tests/resources/dog.webp", "rb") as fp:
+            project_files_mock.return_value = project_files(self)
+            project_files_mock.assert_not_called()
 
-        uplyfile.get_file_url(BytesIO())
-        url = uplyfile.get_file_url(BytesIO())
+            uplyfile.get_file_url(fp)
+            url = uplyfile.get_file_url(fp)
 
-        assert not url
-        project_files_mock.assert_called_once()
+            assert not url
+            project_files_mock.assert_called_once()
 
 
 class TestListProjectFiles:
