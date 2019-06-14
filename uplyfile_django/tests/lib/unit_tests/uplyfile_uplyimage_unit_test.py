@@ -1,6 +1,6 @@
 import pytest
 import re
-from uplyfile_django.lib.uplyfilepy import UplyImage
+from uplyfile_django.lib.uplyfile import UplyImage
 from urllib.parse import urlparse
 
 
